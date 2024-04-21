@@ -7,7 +7,7 @@ const KeyValueStore = () => {
     const history = useHistory();
     const [keyValues, setKeyValues] = useState({});
 
-    // Parse the key-value pairs from the URL
+    // Parse the key-value pairs from the URL and update the state
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const newKeyValues = {};
@@ -23,9 +23,30 @@ const KeyValueStore = () => {
             ...prev,
             [key]: value
         }));
+
+        // Update the URL with the new key-value pairs
+        const params = new URLSearchParams();
+        Object.keys(keyValues).forEach((k) => {
+            params.append(k, keyValues[k]);
+        });
+        history.push(`?${params.toString()}`);
     };
 
-    // Handle updating the URL when the Update Values button is clicked
+    // Function to handle deleting a key-value pair from the state
+    const handleDeleteClick = (key) => {
+        const newKeyValues = { ...keyValues };
+        delete newKeyValues[key];
+        setKeyValues(newKeyValues);
+
+        // Update the URL to remove the deleted key-value pair
+        const params = new URLSearchParams();
+        Object.keys(newKeyValues).forEach((k) => {
+            params.append(k, newKeyValues[k]);
+        });
+        history.push(`?${params.toString()}`);
+    };
+
+    // Function to handle updating the URL when the "Update Values" button is clicked
     const handleUpdateClick = () => {
         const params = new URLSearchParams();
         Object.keys(keyValues).forEach((key) => {
@@ -34,21 +55,7 @@ const KeyValueStore = () => {
         history.push(`?${params.toString()}`);
     };
 
-    // Handle deleting a key-value pair from the state
-    const handleDeleteClick = (key) => {
-        const newKeyValues = { ...keyValues };
-        delete newKeyValues[key];
-        setKeyValues(newKeyValues);
-
-        // Update URL
-        const params = new URLSearchParams();
-        Object.keys(newKeyValues).forEach((k) => {
-            params.append(k, newKeyValues[k]);
-        });
-        history.push(`?${params.toString()}`);
-    };
-
-    // Render the key-value pairs
+    // Render the key-value pairs or a message if none are found
     return (
         <div>
             <h1>Key Value Store</h1>
@@ -59,7 +66,7 @@ const KeyValueStore = () => {
                             <span className='key-field'>{key}:</span>
                             <input
                                 className='value-field'
-                                type="text"
+                                type='text'
                                 value={keyValues[key]}
                                 onChange={(e) => updateKeyValue(key, e.target.value)}
                             />
